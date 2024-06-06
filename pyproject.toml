@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "pomodoro-time"
+version = "0.1.0"
+description = ""
+authors = ["Лев Халяпин <lev.halyapin@yandex.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.111.0"
+uvicorn = "^0.30.0"
+pydantic-settings = "^2.2.1"
+sqlalchemy = "^2.0.30"
+alembic = "^1.13.1"
+psycopg2-binary = "^2.9.9"
+redis = "^5.0.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
