@@ -1,7 +1,7 @@
 from pydantic import BaseModel, model_validator
 
 
-class Task(BaseModel):
+class  Task(BaseModel):
     id: int
     name: str | None = None
     pomodoro_count: int | None = None

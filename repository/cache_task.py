@@ -11,9 +11,11 @@ class TasksCache:
 
     def get_tasks(self) -> list[Task]:
         with self.redis as redis:
-            return [Task.model_validate(
-                json.loads(task) for task in redis.lrange('tasks', 0, -1)
-            )]
+            print(json.loads(task) for task in redis.lrange('tasks', 0, -1))
+            return [
+                Task.model_validate(json.loads(task))
+                for task in redis.lrange('tasks', 0, -1)
+            ]
 
     def set_tasks(self, tasks: list[Task]):
         tasks_json = [task.json() for task in tasks]
