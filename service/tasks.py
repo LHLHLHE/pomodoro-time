@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from database import Tasks
+from models import Tasks
 from repository import TasksRepository, TasksCache
 from schemas.tasks import Task
 
