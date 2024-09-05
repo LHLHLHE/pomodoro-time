@@ -10,11 +10,10 @@ from models import UserProfiles
 class UsersRepository:
     db_session: Session
 
-    def create_user(self, username: str, password: str, access_token: str) -> UserProfiles:
+    def create_user(self, username: str, password: str) -> UserProfiles:
         query = insert(UserProfiles).values(
             username=username,
-            password=password,
-            access_token=access_token
+            password=password
         ).returning(UserProfiles.id)
         with self.db_session() as session:
             user_id: int = session.execute(query).scalar()
