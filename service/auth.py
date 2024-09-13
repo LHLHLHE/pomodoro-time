@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from jose import jwt, JWTError
 
+from client import GoogleClient, YandexClient
 from exceptions import (
     UserNotFoundException,
     UserIncorrectPasswordException,
@@ -11,7 +12,7 @@ from exceptions import (
 )
 from models import UserProfiles
 from repository import UsersRepository
-from schemas import UserLogin
+from schemas import UserLogin, UserCreate
 from settings import Settings
 
 
@@ -19,12 +20,52 @@ from settings import Settings
 class AuthService:
     user_repo: UsersRepository
     settings: Settings
+    google_client: GoogleClient
+    yandex_client: YandexClient
 
     def login(self, username: str, password: str) -> UserLogin:
         user = self.user_repo.get_user_by_username(username)
         self._validate_auth_user(user, password)
         access_token = self.generate_access_token(user.id)
         return UserLogin(id=user.id, access_token=access_token)
+
+    def get_google_redirect_url(self):
+        return self.settings.google_redirect_url
+
+    def auth_google(self, code: str):
+        user_data = self.google_client.get_user_info(code)
+
+        if user := self.user_repo.get_user_by_email(email=user_data.email):
+            access_token = self.generate_access_token(user.id)
+            return UserLogin(id=user.id, access_token=access_token)
+
+        create_user_data = UserCreate(
+            google_access_token=user_data.access_token,
+            email=user_data.email,
+            name=user_data.name
+        )
+        created_user = self.user_repo.create_user(create_user_data)
+        access_token = self.generate_access_token(created_user.id)
+        return UserLogin(id=created_user.id, access_token=access_token)
+
+    def get_yandex_redirect_url(self):
+        return self.settings.yandex_redirect_url
+
+    def auth_yandex(self, code: str):
+        user_data = self.yandex_client.get_user_info(code)
+
+        if user := self.user_repo.get_user_by_email(email=user_data.default_email):
+            access_token = self.generate_access_token(user.id)
+            return UserLogin(id=user.id, access_token=access_token)
+
+        create_user_data = UserCreate(
+            yandex_access_token=user_data.access_token,
+            email=user_data.default_email,
+            name=user_data.name
+        )
+        created_user = self.user_repo.create_user(create_user_data)
+        access_token = self.generate_access_token(created_user.id)
+        return UserLogin(id=created_user.id, access_token=access_token)
 
     @staticmethod
     def _validate_auth_user(user: UserProfiles, password: str):
