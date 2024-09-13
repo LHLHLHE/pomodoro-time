@@ -2,6 +2,7 @@ from fastapi import Depends, security, Security, HTTPException
 from sqlalchemy.orm import Session
 
 from cache import get_redis_connection
+from client import GoogleClient, YandexClient
 from database import get_db_session
 from exceptions import InvalidTokenException, TokenExpiredException
 from repository import TasksCache, TasksRepository, UsersRepository
@@ -33,10 +34,25 @@ def get_users_repository(db_session: Session = Depends(get_db_session)) -> Users
     return UsersRepository(db_session)
 
 
+def get_google_client() -> GoogleClient:
+    return GoogleClient(settings=Settings())
+
+
+def get_yandex_client() -> YandexClient:
+    return YandexClient(settings=Settings())
+
+
 def get_auth_service(
-    users_repo: UsersRepository = Depends(get_users_repository)
+    users_repo: UsersRepository = Depends(get_users_repository),
+    google_client: GoogleClient = Depends(get_google_client),
+    yandex_client: YandexClient = Depends(get_yandex_client)
 ) -> AuthService:
-    return AuthService(user_repo=users_repo, settings=Settings())
+    return AuthService(
+        user_repo=users_repo,
+        settings=Settings(),
+        google_client=google_client,
+        yandex_client=yandex_client
+    )
 
 
 def get_users_service(
